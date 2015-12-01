@@ -9,6 +9,8 @@ import jsonapi.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -19,6 +21,7 @@ import java.util.Date;
 import java.util.List;
 
 @Controller
+@PropertySource("classpath:answers.txt")
 public class StatisticController {
 
     Logger logger = LoggerFactory.getLogger(StatisticController.class);
@@ -28,6 +31,9 @@ public class StatisticController {
 
     @Autowired
     private RequestService requestService;
+
+    @Autowired
+    Environment environment;
 
     @RequestMapping(value = "/staistic", method = RequestMethod.GET)
     @ResponseBody
@@ -48,7 +54,7 @@ public class StatisticController {
         Request lastRequest = requestService.findById(requestId);
         if(lastRequest == null){
             ErrorResponse errorResponse = new ErrorResponse();
-            errorResponse.setError("Cannot find id request");
+            errorResponse.setError(environment.getProperty("cannot_find_req"));
             return errorResponse;
         }
         List<User> users = userService.findUserByStatusAndDate(isOnline, lastRequest.getDate());

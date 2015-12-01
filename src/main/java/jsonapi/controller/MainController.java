@@ -11,6 +11,8 @@ import jsonapi.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
@@ -27,12 +29,16 @@ import java.util.Date;
 import java.util.List;
 
 @Controller
+@PropertySource("classpath:answers.txt")
 public class MainController {
 
     Logger logger = LoggerFactory.getLogger(MainController.class);
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    Environment environment;
 
     @RequestMapping(value = "/jsonApi", method = RequestMethod.GET)
     public String printWelcome(ModelMap model) {
@@ -48,21 +54,20 @@ public class MainController {
 
     @RequestMapping(value = "/changeStatus", method = RequestMethod.POST)
     @ResponseBody
-    public Object changeStatus(@RequestParam Integer id, @RequestParam(required = false) boolean isOnline) throws InterruptedException {
+    public Object changeStatus(@RequestParam Integer requestId, @RequestParam(required = false) boolean isOnline) throws InterruptedException {
         StatusResponse statusResponse = new StatusResponse();
-        User user = userService.findById(id);
-        Thread.currentThread().sleep(5000);
+        User user = userService.findById(requestId);
         if (user != null) {
             statusResponse.setBeforeIsOnline(user.isOnline());
             user.setOnline(isOnline);
             user.setLastChange(new Date());
             userService.save(user);
             statusResponse.setAfterIsOnline(isOnline);
-            statusResponse.setId(id);
+            statusResponse.setId(requestId);
             return statusResponse;
         } else {
             ErrorResponse error = new ErrorResponse();
-            error.setError("user not found");
+            error.setError(environment.getProperty("user_not_found"));
             return error;
         }
     }

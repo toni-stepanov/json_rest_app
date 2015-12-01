@@ -1,0 +1,4 @@
+photo_not_found=photo didn't found
+user_not_found=user not found
+cannot_handle_file=Cannot handle file
+cannot_find_req=cannot find id request

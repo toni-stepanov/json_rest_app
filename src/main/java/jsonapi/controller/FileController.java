@@ -4,6 +4,8 @@ import jsonapi.entity.User;
 import jsonapi.model.UIDResponse;
 import jsonapi.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,10 +20,14 @@ import java.io.FileOutputStream;
 import java.util.Date;
 
 @Controller
+@PropertySource("classpath:answers.txt")
 public class FileController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    Environment environment;
 
     @RequestMapping(value = "/file_upload", method = RequestMethod.POST)
     @ResponseBody
@@ -40,11 +46,11 @@ public class FileController {
                 stream.close();
             } catch (Exception e) {
                 System.out.println(e.getMessage());
-                UIDResponse.setError("Cannot handle file " + file.getOriginalFilename());
+                UIDResponse.setError(environment.getProperty("cannot_handle_file") + file.getOriginalFilename());
             }
             UIDResponse.setUid(serverFile.getAbsolutePath());
         } else {
-            UIDResponse.setError("File not found");
+            UIDResponse.setError(environment.getProperty("photo_not_found"));
         }
         return UIDResponse;
     }
@@ -55,7 +61,7 @@ public class FileController {
         UIDResponse uidResponse = new UIDResponse();
         File avatarFile = new File(uid);
         if (!avatarFile.exists()) {
-            uidResponse.setError("photo didn't found");
+            uidResponse.setError(environment.getProperty("photo_not_found"));
             return uidResponse;
         }
         User user = new User();
